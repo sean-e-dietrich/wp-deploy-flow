@@ -1,0 +1,16 @@
+{
+  "name": "sean-e-dietrich/wp-deploy-flow",
+  "description": "",
+  "type": "wp-cli-package",
+  "homepage": "https://github.com/sean-e-dietrich/wp-deploy-flow",
+  "license": "MIT",
+  "authors": [],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "autoload": {
+      "files": [ "deploy.php" ]
+  },
+  "require": {
+      "wp-cli/wp-cli": "^1.1.0"
+  }
+}
