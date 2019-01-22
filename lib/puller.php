@@ -1,12 +1,23 @@
 <?php
 
+/**
+ * Class WP_Deploy_Flow_Puller
+ */
 class WP_Deploy_Flow_Puller {
 
+	/**
+	 * WP_Deploy_Flow_Puller constructor.
+	 *
+	 * @param $params
+	 */
 	public function __construct($params)
 	{
 		$this->params = $params;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function commands()
 	{
 		$commands = array();
@@ -24,12 +35,18 @@ class WP_Deploy_Flow_Puller {
 		return $commands;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function commands_for_files() {
 		$commands = array();
 		$this->_commands_for_files($commands);
 		return $commands;
 	}
 
+	/**
+	 * @param $commands
+	 */
 	protected function _commands_for_files(&$commands) {
 		extract( $this->params );
 
@@ -67,6 +84,9 @@ class WP_Deploy_Flow_Puller {
 		}
 	}
 
+	/**
+	 * @param $commands
+	 */
 	protected function _commands_for_database_import_thru_ssh(&$commands)
 	{
 		extract( $this->params );
@@ -78,6 +98,9 @@ class WP_Deploy_Flow_Puller {
 		$commands[]= array("ssh $ssh_user@$ssh_host -p $ssh_port \"cd $dist_path; rm dump.sql;\"", true);
 	}
 
+	/**
+	 * @param $commands
+	 */
 	protected function _commands_for_database_import_locally(&$commands)
 	{
 		extract( $this->params );
@@ -90,6 +113,9 @@ class WP_Deploy_Flow_Puller {
 		$commands[]= array("wp migrate to $path $url dump.sql", true);
 	}
 
+	/**
+	 * @param $commands
+	 */
 	protected function _commands_for_database_dump(&$commands) {
 		extract( $this->params );
 		$commands[]= array('wp db export db_bk.sql', true);

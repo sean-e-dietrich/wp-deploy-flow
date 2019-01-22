@@ -1,12 +1,23 @@
 <?php
 
+/**
+ * Class WP_Deploy_Flow_Pusher
+ */
 class WP_Deploy_Flow_Pusher {
 
+	/**
+	 * WP_Deploy_Flow_Pusher constructor.
+	 *
+	 * @param $params
+	 */
 	public function __construct($params)
 	{
 		$this->params = $params;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function commands()
 	{
 		$commands = array();
@@ -25,6 +36,9 @@ class WP_Deploy_Flow_Pusher {
 		return $commands;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function commands_for_files() {
 		$commands = array();
 		$commands[]= array('rm dump.sql', true);
@@ -34,6 +48,9 @@ class WP_Deploy_Flow_Pusher {
 
 	}
 
+	/**
+	 * @param $commands
+	 */
 	protected function _commands_for_files(&$commands) {
 		extract( $this->params );
 
@@ -70,6 +87,9 @@ class WP_Deploy_Flow_Pusher {
 		$commands[]= array($command, true);
 	}
 
+	/**
+	 * @param $commands
+	 */
 	protected function _commands_post_push(&$commands) {
 		extract( $this->params );
 		$const = strtoupper( $env ) . '_POST_SCRIPT';
@@ -79,6 +99,9 @@ class WP_Deploy_Flow_Pusher {
 		}
 	}
 
+	/**
+	 * @param $commands
+	 */
 	protected function _commands_for_database_import_thru_ssh(&$commands)
 	{
 		extract( $this->params );
@@ -86,12 +109,18 @@ class WP_Deploy_Flow_Pusher {
 		$commands[]= array( "ssh $ssh_db_user@$ssh_db_host -p $ssh_port \"cd $ssh_db_path; mysql --user=$db_user --password=$db_password --host=$db_host $db_name < dump.sql; rm dump.sql\"", true );
 	}
 
+	/**
+	 * @param $commands
+	 */
 	protected function _commands_for_database_import_locally(&$commands)
 	{
 		extract( $this->params );
 		$commands[]= array( "mysql --user=$db_user --password=$db_password --host=$db_host $db_name < dump.sql;", true );
 	}
 
+	/**
+	 * @param $commands
+	 */
 	protected function _commands_for_database_dump(&$commands)
 	{
 		extract( $this->params );

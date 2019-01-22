@@ -10,11 +10,17 @@ WP_CLI::add_command( 'deploy', 'WP_Deploy_Flow_Command' );
  */
 class WP_Deploy_Flow_Command extends WP_CLI_Command {
 
+	/**
+	 * @var
+	 */
 	protected static $_env;
+
 	/**
 	 * Push local to remote, both system and database
 	 *
 	 * @synopsis <environment> [--dry-run]
+	 *
+	 * @when after_wp_load
 	 */
 	public function push( $args = array(), $flags = array() ) {
 		$this->_push_command('commands', $args, $flags);
@@ -24,6 +30,8 @@ class WP_Deploy_Flow_Command extends WP_CLI_Command {
 	 * Push local to remote, only filesystem
 	 *
 	 * @synopsis <environment> [--dry-run]
+	 *
+	 * @when after_wp_load
 	 */
 	public function push_files( $args = array(), $flags = array() ) {
 		$this->_push_command('commands_for_files', $args, $flags);
@@ -33,6 +41,8 @@ class WP_Deploy_Flow_Command extends WP_CLI_Command {
 	 * Pull local from remote, both system and database
 	 *
 	 * @synopsis <environment> [--dry-run]
+	 *
+	 * @when after_wp_load
 	 */
 	public function pull( $args = array(), $flags = array() ) {
 		$this->_pull_command('commands', $args, $flags);
@@ -42,11 +52,22 @@ class WP_Deploy_Flow_Command extends WP_CLI_Command {
 	 * Pull local from remote, only filesystem
 	 *
 	 * @synopsis <environment> [--dry-run]
+	 *
+	 * @when after_wp_load
 	 */
 	public function pull_files( $args = array(), $flags = array() ) {
 		$this->_pull_command('commands_for_files', $args, $flags);
 	}
 
+	/**
+	 * @param $command_name
+	 * @param $args
+	 * @param $flags
+	 *
+	 * @return |null
+	 * @throws \ReflectionException
+	 * @throws \WP_CLI\ExitException
+	 */
 	protected function _push_command($command_name, $args, $flags)
 	{
 		$this->params = self::_prepare_and_extract( $args );
@@ -56,7 +77,7 @@ class WP_Deploy_Flow_Command extends WP_CLI_Command {
 		if ( $locked === true ) {
 			return WP_CLI::error( "$env environment is locked, you cannot push to it" );
 		}
-		require 'pusher.php';
+		require __DIR__ . '/pusher.php';
 
 		$reflectionMethod = new ReflectionMethod('WP_Deploy_Flow_Pusher', $command_name);
 		$commands = $reflectionMethod->invoke(new WP_Deploy_Flow_Pusher($this->params));
@@ -64,6 +85,15 @@ class WP_Deploy_Flow_Command extends WP_CLI_Command {
 		$this->_execute_commands($commands, $args);
 	}
 
+	/**
+	 * @param $command_name
+	 * @param $args
+	 * @param $flags
+	 *
+	 * @return |null
+	 * @throws \ReflectionException
+	 * @throws \WP_CLI\ExitException
+	 */
 	protected function _pull_command($command_name, $args, $flags)
 	{
 		$this->params = self::_prepare_and_extract( $args );
@@ -75,7 +105,7 @@ class WP_Deploy_Flow_Command extends WP_CLI_Command {
 			return WP_CLI::error( ENVIRONMENT . ' env is locked, you can not pull to your local copy' );
 		}
 
-		require 'puller.php';
+		require __DIR__ . '/puller.php';
 
 		$reflectionMethod = new ReflectionMethod('WP_Deploy_Flow_Puller', $command_name);
 		$commands = $reflectionMethod->invoke(new WP_Deploy_Flow_Puller($this->params));
@@ -83,6 +113,9 @@ class WP_Deploy_Flow_Command extends WP_CLI_Command {
 		$this->_execute_commands($commands, $args);
 	}
 
+	/**
+	 * @param $commands
+	 */
 	protected function _execute_commands($commands)
 	{
 		if($this->flags['dry-run']) {
@@ -96,6 +129,12 @@ class WP_Deploy_Flow_Command extends WP_CLI_Command {
 		}
 	}
 
+	/**
+	 * @param $args
+	 *
+	 * @return array|bool
+	 * @throws \WP_CLI\ExitException
+	 */
 	protected static function _prepare_and_extract( $args ) {
 		$out = array();
 		self::$_env = $args[0];
@@ -116,6 +155,9 @@ class WP_Deploy_Flow_Command extends WP_CLI_Command {
 		return $out;
 	}
 
+	/**
+	 * @return array|bool
+	 */
 	protected static function _validate_config() {
 		$errors = array();
 		foreach ( array( 'path', 'url', 'db_host', 'db_user', 'db_name', 'db_password' ) as $postfix ) {
@@ -128,10 +170,18 @@ class WP_Deploy_Flow_Command extends WP_CLI_Command {
 		return $errors;
 	}
 
+	/**
+	 * @param $postfix
+	 *
+	 * @return string
+	 */
 	public static function config_constant( $postfix ) {
 		return strtoupper( self::$_env.'_'.$postfix );
 	}
 
+	/**
+	 * @return array
+	 */
 	protected static function config_constants_to_array() {
 		$out = array();
 		foreach ( array( 'locked', 'path', 'ssh_db_path', 'url', 'db_host', 'db_user', 'db_port', 'db_name', 'db_password', 'ssh_db_host', 'ssh_db_user', 'ssh_db_path', 'ssh_host', 'ssh_user', 'ssh_port', 'excludes' ) as $postfix ) {
@@ -140,6 +190,11 @@ class WP_Deploy_Flow_Command extends WP_CLI_Command {
 		return $out;
 	}
 
+	/**
+	 * @param $url
+	 *
+	 * @return string|string[]|null
+	 */
 	private static function _trim_url( $url ) {
 
 		/** In case scheme relative URI is passed, e.g., //www.google.com/ */
