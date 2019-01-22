@@ -12,8 +12,7 @@ A wp-cli command to deploy your wordpress instance.
 
 ##  Install - Usage
 
-
-Check here : http://demental.info/blog/2013/04/09/a-decent-wordpress-deploy-workflow/
+wp package install https://github.com/sean-e-dietrich/wp-deploy-flow.git
 
 ### Setting up environments
 
